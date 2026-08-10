@@ -335,9 +335,8 @@ static void show_switcher(bool is_linear) {
     if (config && config->sticky_mode) {
       app_state.selected_index = active_idx;
     } else {
-      app_state.selected_index = (app_state.count > 1)
-          ? (active_idx + 1) % app_state.count
-          : 0;
+      app_state.selected_index =
+          (app_state.count > 1) ? (active_idx + 1) % app_state.count : 0;
     }
   } else {
     /* MRU mode: active window is always index 0 */
@@ -546,6 +545,14 @@ static void handle_command(const char *payload) {
         app_state.needs_render = true;
       }
     }
+    return;
+  }
+
+  if (strcmp(cmd_buf, CMD_RELOAD) == 0) {
+    LOG("Reloading config...");
+    config = load_config_from(NULL);
+    render_set_config(config);
+    icons_init(config->icon_theme, config->icon_fallback);
     return;
   }
 
@@ -1005,6 +1012,7 @@ int main(int argc, char **argv) {
   /* First pass: check for --help and --daemon */
   const char *config_path = NULL;
   bool daemon_mode = false;
+  bool reloading_config = false;
 
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
@@ -1021,10 +1029,27 @@ int main(int argc, char **argv) {
       }
       config_path = argv[++i];
     }
+
+    // TODO: account for --config (maybe change command protocol?)
+    // bit of a hacky solution maybe, i've never worked with daemons before.
+    // all i have done here is create a new command in the `handle_command()`
+    // function that listens for CMD_RELOAD ("RELOAD") and just reruns the
+    // functions stolen from step 2 of `run_daemon()` function.
+    // - Zach
+    if (strcmp(argv[i], "--reload-config") || strcmp(argv[i], "-r") == 0) {
+      reloading_config = true;
+    }
   }
 
   if (daemon_mode)
     return run_daemon(config_path);
+
+  if (reloading_config) {
+    // send_command("RELOAD:/home/.../.config/snappy-switcher/config.ini")
+    // ^ something like this?
+    send_command(CMD_RELOAD);
+    return 0;
+  }
 
   /* Client mode: pass full argv for run_client to parse */
   return run_client(argc, argv);

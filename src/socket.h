@@ -17,6 +17,7 @@ const char *get_socket_path(void);
 #define CMD_TOGGLE "TOGGLE"
 #define CMD_HIDE "HIDE"
 #define CMD_QUIT "QUIT"
+#define CMD_RELOAD "RELOAD"
 
 /* Server functions (daemon) */
 int init_server(void);
