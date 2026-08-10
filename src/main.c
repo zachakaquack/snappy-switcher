@@ -552,6 +552,9 @@ static void handle_command(const char *payload) {
     LOG("Reloading config...");
     config = load_config_from(NULL);
     render_set_config(config);
+
+    // redo icons (fixed potential memory leak?)
+    icons_cleanup();
     icons_init(config->icon_theme, config->icon_fallback);
     return;
   }
