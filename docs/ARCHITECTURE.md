@@ -249,7 +249,7 @@ CMD:MOD:WORKSPACE_FLAG:SOURCE:SILENT_FLAG:LINEAR_FLAG
 
 | Field | Description | Examples |
 |-------|-------------|---------|
-| `CMD` | Command verb | `NEXT`, `PREV`, `TOGGLE`, `QUIT`, `HIDE`, `SELECT` |
+| `CMD` | Command verb | `NEXT`, `PREV`, `TOGGLE`, `QUIT`, `HIDE`, `SELECT`, `RELOAD` |
 | `MOD` | Dismiss key name | `ALT`, `SUPER`, `SPACE`, `1`, `none` |
 | `WORKSPACE_FLAG` | Filter to current workspace | `0` (off), `1` (on) |
 | `SOURCE` | Invocation origin | `cli` (terminal), `bind` (compositor keybind) |
