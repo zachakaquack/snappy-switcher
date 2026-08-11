@@ -1044,12 +1044,6 @@ int main(int argc, char **argv) {
       config_path = argv[++i];
     }
 
-    // TODO: account for --config (maybe change command protocol?)
-    // bit of a hacky solution maybe, i've never worked with daemons before.
-    // all i have done here is create a new command in the `handle_command()`
-    // function that listens for CMD_RELOAD ("RELOAD") and just reruns the
-    // functions stolen from step 2 of `run_daemon()` function.
-    // - Zach
     if (strcmp(argv[i], "--reload-config") == 0 || strcmp(argv[i], "-r") == 0) {
       reloading_config = true;
     }
