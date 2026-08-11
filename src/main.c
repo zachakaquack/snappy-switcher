@@ -966,23 +966,24 @@ static void print_help(const char *prog) {
          "[--silent] [--linear]\n\n",
          prog);
   printf("Options:\n");
-  printf("  --daemon           Start the switcher daemon\n");
-  printf("  --config, -c PATH  Use config file (daemon only)\n");
-  printf("  --help, -h         Show this help message\n\n");
+  printf("  --daemon             Start the switcher daemon\n");
+  printf("  --config, -c PATH    Use config file (daemon only)\n");
+  printf("  --help, -h           Show this help message\n\n");
+  printf("  --reload-config, -r  Reload config\n\n");
   printf("Commands (requires daemon running):\n");
-  printf("  next               Select next window\n");
-  printf("  prev               Select previous window\n");
-  printf("  toggle             Toggle the switcher visibility\n");
-  printf("  select             Activate the selected window\n");
-  printf("  hide               Hide the switcher\n");
-  printf("  quit               Terminate the daemon\n\n");
+  printf("  next                 Select next window\n");
+  printf("  prev                 Select previous window\n");
+  printf("  toggle               Toggle the switcher visibility\n");
+  printf("  select               Activate the selected window\n");
+  printf("  hide                 Hide the switcher\n");
+  printf("  quit                 Terminate the daemon\n\n");
   printf("Flags (with next, prev, toggle):\n");
-  printf("  --mod <key>        Dismiss key (alt, super, ctrl, shift, space, "
+  printf("  --mod <key>          Dismiss key (alt, super, ctrl, shift, space, "
          "etc.)\n");
-  printf("  --workspace        Filter windows to current workspace\n");
+  printf("  --workspace          Filter windows to current workspace\n");
   printf(
-      "  --silent           Instant MRU switch without UI (next/prev only)\n");
-  printf("  --linear           Use deterministic workspace/address sort "
+      "  --silent             Instant MRU switch without UI (next/prev only)\n");
+  printf("  --linear             Use deterministic workspace/address sort "
          "instead of MRU\n\n");
   printf("Examples:\n");
   printf("  %s --daemon &\n", prog);
