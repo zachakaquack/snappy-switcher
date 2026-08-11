@@ -550,6 +550,7 @@ static void handle_command(const char *payload) {
 
   if (strcmp(cmd_buf, CMD_RELOAD) == 0) {
     LOG("Reloading config...");
+    free_config(config);
     config = load_config_from(NULL);
     render_set_config(config);
 
