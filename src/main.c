@@ -376,18 +376,24 @@ static void select_and_hide(void) {
 }
 
 static void handle_command(const char *payload) {
-  /* Protocol: CMD:MOD:WORKSPACE_FLAG:SOURCE:SILENT_FLAG:LINEAR_FLAG
+  /* Protocol: CMD:MOD:WORKSPACE_FLAG:SOURCE:SILENT_FLAG:LINEAR_FLAG:PATH
    * Also supports legacy bare commands (e.g. "QUIT" from takeover)
-   * and 4/5-field payloads (SILENT_FLAG/LINEAR_FLAG default to "0"). */
+   * and 4/5-field payloads (SILENT_FLAG/LINEAR_FLAG default to "0").
+   * `PATH` is an optional flag that is used for --reload-config. Not required
+   * to send in every other command. */
   char cmd_buf[32] = {0};
   char mod_buf[64] = {0};
   char source_buf[16] = {0};
   char silent_buf[4] = {0};
   char linear_buf[4] = {0};
+
+  /* NOTE: unknown how big this should be. it is 1024 in `load_config_from()`, so i took that */
+  char path_buf[1024] = {0};
   int ws_flag = 0;
 
   /* Safe parse: use strtok_r with ':' delimiter */
-  char buf[256];
+  /* changed 256 -> 2048 because it's next power of 2 w/ the new 1024 path buf included */
+  char buf[2048];
   strncpy(buf, payload, sizeof(buf) - 1);
   buf[sizeof(buf) - 1] = '\0';
 
@@ -398,6 +404,7 @@ static void handle_command(const char *payload) {
   char *tok_src = strtok_r(NULL, ":", &saveptr);
   char *tok_sil = strtok_r(NULL, ":", &saveptr);
   char *tok_lin = strtok_r(NULL, ":", &saveptr);
+  char *tok_path = strtok_r(NULL, ":", &saveptr);
 
   if (!tok_cmd) {
     LOG("Malformed command: '%s'", payload);
@@ -415,6 +422,8 @@ static void handle_command(const char *payload) {
     strncpy(silent_buf, tok_sil, sizeof(silent_buf) - 1);
   if (tok_lin)
     strncpy(linear_buf, tok_lin, sizeof(linear_buf) - 1);
+  if (tok_path)
+    strncpy(path_buf, tok_path, sizeof(path_buf) - 1);
 
   bool is_silent = (strcmp(silent_buf, "1") == 0);
   bool is_linear = (strcmp(linear_buf, "1") == 0);
@@ -551,11 +560,10 @@ static void handle_command(const char *payload) {
   if (strcmp(cmd_buf, CMD_RELOAD) == 0) {
     LOG("Reloading config...");
     free_config(config);
-    config = load_config_from(NULL);
-    render_set_config(config);
-
-    // redo icons (fixed potential memory leak?)
     icons_cleanup();
+
+    config = load_config_from(path_buf); /* path buf will be NULL if none provided */
+    render_set_config(config);
     icons_init(config->icon_theme, config->icon_fallback);
     return;
   }
@@ -969,6 +977,7 @@ static void print_help(const char *prog) {
   printf("  --daemon             Start the switcher daemon\n");
   printf("  --config, -c PATH    Use config file (daemon only)\n");
   printf("  --help, -h           Show this help message\n\n");
+  /* NOTE: maybe change to 'Force reload config' if hot reloading ever gets implemented? */
   printf("  --reload-config, -r  Reload config\n\n");
   printf("Commands (requires daemon running):\n");
   printf("  next                 Select next window\n");
@@ -1050,9 +1059,19 @@ int main(int argc, char **argv) {
     return run_daemon(config_path);
 
   if (reloading_config) {
-    // send_command("RELOAD:/home/.../.config/snappy-switcher/config.ini")
-    // ^ something like this?
-    send_command(CMD_RELOAD);
+    /* command structure: CMD:MOD:WORKSPACE_FLAG:SOURCE:SILENT_FLAG:LINEAR_FLAG:PATH */
+    if (!config_path) {
+      send_command(CMD_RELOAD);
+      return 0;
+    }
+
+    /* sizeof + 1024 = 1031; maybe make 2048 to match new buffer in `handle_command()`?*/
+    char full_command[sizeof(CMD_RELOAD) + 1024] = {0};
+    snprintf(full_command, sizeof(full_command),
+             "%s:alt:0:cli:0:0:%s",
+             CMD_RELOAD, config_path);
+    send_command(full_command);
+
     return 0;
   }
 
