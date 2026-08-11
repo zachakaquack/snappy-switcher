@@ -1040,7 +1040,7 @@ int main(int argc, char **argv) {
     // function that listens for CMD_RELOAD ("RELOAD") and just reruns the
     // functions stolen from step 2 of `run_daemon()` function.
     // - Zach
-    if (strcmp(argv[i], "--reload-config") || strcmp(argv[i], "-r") == 0) {
+    if (strcmp(argv[i], "--reload-config") == 0 || strcmp(argv[i], "-r") == 0) {
       reloading_config = true;
     }
   }
